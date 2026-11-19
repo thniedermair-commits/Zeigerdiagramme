@@ -120,7 +120,7 @@
               </div>
             </div>
             <div id="b-rot" class="rot-wrap"></div>
-            <p class="caption">Die Länge des Zeigers entspricht dem Scheitelwert (û, î). Die Höhe der Zeigerspitze ist der Augenblickswert – genau das zeigt die Kurve rechts.</p>
+            <p class="caption">Die Länge des Zeigers entspricht dem Scheitelwert (û, î). Die Höhe der Zeigerspitze ist der Augenblickswert – genau das zeigt die Kurve rechts. Strom und Spannung haben eigene Maßstäbe: Je kleiner der (Blind-)Widerstand, desto größer der Strom.</p>
           </div>
           <div class="card">
             <div class="card-head"><h2>Blindwiderstand in Abhängigkeit von der Frequenz</h2></div>
@@ -169,11 +169,16 @@
     $('#b-xf').innerHTML = xfChart(c, basics);
   }
 
-  function rotSVG(phi, theta) {
-    const W = 780, H = 300, cx = 150, cy = 150, R = 115, x0 = 310, x1 = 760;
+  /* Strom-Maßstab: X = 100 Ω ergibt 0,6 · Zeigerkreis. So ist die Stromamplitude
+     proportional zu I = U / X und zwischen R, L und C vergleichbar. */
+  const I_REF = 230 / 100, I_REF_LEN = 0.6, I_MAX_LEN = 1.25;
+  function rotSVG(phi, theta, I) {
+    const W = 780, H = 340, cx = 150, cy = 170, R = 115, x0 = 310, x1 = 760;
+    const iRaw = (I / I_REF) * I_REF_LEN, clipped = iRaw > I_MAX_LEN;
+    const ia = Math.min(iRaw, I_MAX_LEN);
     const X = (d) => x0 + (d / 360) * (x1 - x0);
     let s = '';
-    s += `<circle cx="${cx}" cy="${cy}" r="${R}" class="rot-circle"/><circle cx="${cx}" cy="${cy}" r="${R * 0.7}" class="rot-circle faint"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R}" class="rot-circle"/><circle cx="${cx}" cy="${cy}" r="${R * ia}" class="rot-circle faint" style="stroke:var(--c-i)"/>`;
     s += `<line x1="${cx - R - 10}" y1="${cy}" x2="${cx + R + 10}" y2="${cy}" class="axis-line"/><line x1="${cx}" y1="${cy - R - 10}" x2="${cx}" y2="${cy + R + 10}" class="axis-line"/>`;
     for (let d = 0; d <= 360; d += 90) {
       s += `<line x1="${X(d)}" y1="${cy - R - 8}" x2="${X(d)}" y2="${cy + R + 8}" class="grid-line"/><text x="${X(d)}" y="${H - 6}" text-anchor="middle" class="tick-text">${d}°</text>`;
@@ -184,10 +189,10 @@
       for (let i = 0; i <= 120; i++) { const x = i * 3; d += (i ? 'L' : 'M') + X(x).toFixed(1) + ' ' + (cy - a * R * Math.sin(rad(x - sh))).toFixed(1); }
       return d;
     };
-    s += `<path d="${curve(1, 0)}" class="curve" style="stroke:var(--c-u)"/><path d="${curve(0.7, phi)}" class="curve" style="stroke:var(--c-i)"/>`;
+    s += `<path d="${curve(1, 0)}" class="curve" style="stroke:var(--c-u)"/><path d="${curve(ia, phi)}" class="curve" style="stroke:var(--c-i)"/>`;
     const th = ((theta % 360) + 360) % 360;
     const ux = cx + R * Math.cos(rad(th)), uy = cy - R * Math.sin(rad(th));
-    const ix = cx + 0.7 * R * Math.cos(rad(th - phi)), iy = cy - 0.7 * R * Math.sin(rad(th - phi));
+    const ix = cx + ia * R * Math.cos(rad(th - phi)), iy = cy - ia * R * Math.sin(rad(th - phi));
     const cxr = X(th);
     s += `<line x1="${cxr}" y1="${cy - R - 8}" x2="${cxr}" y2="${cy + R + 8}" class="cursor-line"/>`;
     s += `<line x1="${ux}" y1="${uy}" x2="${cxr}" y2="${uy}" class="proj" style="stroke:var(--c-u)"/><line x1="${ix}" y1="${iy}" x2="${cxr}" y2="${iy}" class="proj" style="stroke:var(--c-i)"/>`;
@@ -201,8 +206,9 @@
     s += `<circle cx="${cxr}" cy="${uy}" r="5" fill="var(--c-u)"/><circle cx="${cxr}" cy="${iy}" r="5" fill="var(--c-i)"/>`;
     s += `<text x="${ux + 10 * Math.cos(rad(th))}" y="${uy - 12 * Math.sin(rad(th))}" class="ph-label" style="fill:var(--c-u)" text-anchor="middle" dominant-baseline="middle">û</text>`;
     s += `<text x="${ix + 10 * Math.cos(rad(th - phi))}" y="${iy - 12 * Math.sin(rad(th - phi))}" class="ph-label" style="fill:var(--c-i)" text-anchor="middle" dominant-baseline="middle">î</text>`;
-    s += `<g class="legend"><rect x="8" y="8" width="12" height="4" rx="2" fill="var(--c-u)"/><text x="26" y="13" class="legend-text">Spannung u</text>
-          <rect x="8" y="24" width="12" height="4" rx="2" fill="var(--c-i)"/><text x="26" y="29" class="legend-text">Strom i</text></g>`;
+    s += `<g class="legend"><rect x="8" y="8" width="12" height="4" rx="2" fill="var(--c-u)"/><text x="26" y="13" class="legend-text">Spannung u (û = ${fmtUnit(Math.SQRT2 * 230, 'V', 3)})</text>
+          <rect x="8" y="24" width="12" height="4" rx="2" fill="var(--c-i)"/><text x="26" y="29" class="legend-text">Strom i (î = ${fmtUnit(Math.SQRT2 * I, 'A', 3)})</text></g>`;
+    if (clipped) s += `<text x="${W - 10}" y="16" text-anchor="end" class="legend-text" style="fill:var(--warn)">⚠ Strom zu groß für die Darstellung – Kurve begrenzt</text>`;
     return `<svg viewBox="0 0 ${W} ${H}" class="diagram" role="img" aria-label="Rotierende Zeiger mit Liniendiagramm">${s}</svg>`;
   }
 
@@ -241,7 +247,7 @@
     if (basics.playing) basics.theta += dt * 70 * basics.speed;
     if (basics.visible) {
       const el = $('#b-rot');
-      if (el) el.innerHTML = rotSVG(INFO[basics.comp].phi, basics.theta);
+      if (el) el.innerHTML = rotSVG(INFO[basics.comp].phi, basics.theta, basicsResult().I);
     }
     requestAnimationFrame(loop);
   }
