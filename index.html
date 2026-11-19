@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ZeigerLab – Wechselstrom verstehen</title>
+  <meta name="description" content="Interaktive Lern-App zu R, L und C an Wechselspannung: Blindwiderstände, Phasenverschiebung und Zeigerdiagramme.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%236d5dfc'/%3E%3Cpath d='M6 26L26 8' stroke='white' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M6 26H22' stroke='%23fbbf24' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <svg viewBox="0 0 40 40" class="logo" aria-hidden="true">
+        <rect width="40" height="40" rx="11" class="logo-bg"/>
+        <circle cx="12" cy="28" r="2.6" fill="#fff"/>
+        <path d="M12 28L30 11" stroke="#fff" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M12 28H28" stroke="#fbbf24" stroke-width="3.2" stroke-linecap="round"/>
+        <path d="M20 28A8 8 0 0 0 18 22.5" stroke="#fff" stroke-width="1.6" fill="none" opacity=".7"/>
+      </svg>
+      <div>
+        <div class="brand-name">ZeigerLab</div>
+        <div class="brand-sub">R · L · C an Wechselspannung</div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Bereiche">
+      <button role="tab" data-tab="basics" class="tab">⚡ Grundlagen</button>
+      <button role="tab" data-tab="sim" class="tab">🧪 Simulator</button>
+      <button role="tab" data-tab="tasks" class="tab">🎯 Aufgaben</button>
+      <button role="tab" data-tab="formulas" class="tab">📘 Formeln</button>
+    </nav>
+    <button class="icon-btn" id="themeBtn" title="Hell/Dunkel umschalten" aria-label="Farbschema umschalten">🌓</button>
+  </header>
+
+  <main>
+    <section id="tab-basics" class="panel" role="tabpanel"></section>
+    <section id="tab-sim" class="panel" role="tabpanel"></section>
+    <section id="tab-tasks" class="panel" role="tabpanel"></section>
+    <section id="tab-formulas" class="panel" role="tabpanel"></section>
+  </main>
+
+  <dialog id="customDialog" class="dialog"></dialog>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script src="js/physics.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/tasks.js"></script>
+  <script src="js/editor.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
